@@ -1,0 +1,3 @@
+# Wordwright is a single-page game with no crawlable sub-pages.
+User-agent: *
+Allow: /

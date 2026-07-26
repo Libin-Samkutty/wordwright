@@ -1,0 +1,15 @@
+dist
+coverage
+node_modules
+*.tsbuildinfo
+package-lock.json
+
+# Tooling caches and artefacts that live under the project root in this
+# environment; none of it is ours to format.
+.cache
+.npm
+.local
+.config
+test-results
+playwright-report
+scripts/.cache

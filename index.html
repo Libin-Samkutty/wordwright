@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta
+      name="description"
+      content="Wordwright — an offline word guessing game with 4, 5, and 6 letter modes. No accounts, no tracking, everything stays on your device."
+    />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#121213" media="(prefers-color-scheme: dark)" />
+    <title>Wordwright — Word Guessing Game</title>
+    <script>
+      /*
+       * Applies the persisted theme before first paint so there is no flash of
+       * the wrong palette (FR-43, ACCEPTANCE 5.2). Deliberately inline,
+       * dependency-free, and fail-safe: any error leaves the OS default.
+       */
+      (function () {
+        try {
+          var raw = localStorage.getItem('wordwright:v1:settings');
+          var settings = raw ? JSON.parse(raw) : null;
+          var theme = (settings && settings.theme) || 'system';
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var isDark = theme === 'dark' || (theme === 'system' && prefersDark);
+          var root = document.documentElement;
+
+          root.classList.toggle('dark', isDark);
+          if (settings && settings.colorblind) root.dataset.palette = 'cb';
+          if (settings && settings.motion && settings.motion !== 'system') {
+            root.dataset.motion = settings.motion;
+          }
+        } catch (error) {
+          /* Storage unavailable or corrupt (EC-11, EC-12) — the app handles it. */
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
