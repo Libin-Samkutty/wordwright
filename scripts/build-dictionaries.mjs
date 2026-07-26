@@ -42,6 +42,15 @@ const SOURCES = {
   popular: 'https://raw.githubusercontent.com/dolph/dictionary/master/popular.txt',
   /** Norvig's count_1w — word frequencies from the Google Web Trillion Word Corpus. */
   frequency: 'https://norvig.com/ngrams/count_1w.txt',
+  /**
+   * The traditional Unix `/usr/share/dict/words` list, mirrored in the same
+   * repo as `enable`/`popular`. A permissive superset used to GROW the
+   * `guesses` pool (see "Growing the word lists without duplicates" below).
+   * It is not used for `answers`: it has no frequency data, so the existing
+   * `popular.has(word) && ranks.has(word)` candidate filter already excludes
+   * it from the answer pool with no extra code.
+   */
+  unixWords: 'https://raw.githubusercontent.com/dolph/dictionary/master/unix-words',
 };
 
 /**
@@ -193,34 +202,46 @@ function isFairAnswer(word, allWords) {
 
 async function main() {
   process.stdout.write('Fetching sources…\n');
-  const [enableText, popularText, frequencyText] = await Promise.all([
+  const [enableText, popularText, frequencyText, unixWordsText] = await Promise.all([
     fetchCached('enable', SOURCES.enable),
     fetchCached('popular', SOURCES.popular),
     fetchCached('frequency', SOURCES.frequency),
+    fetchCached('unixWords', SOURCES.unixWords),
   ]);
 
   const enable = parseWords(enableText);
   const popular = parseWords(popularText);
   const ranks = parseFrequency(frequencyText);
+  const unixWords = parseWords(unixWordsText);
+
+  // Union, not concatenation: `Set.add` on an existing member is a no-op, so
+  // merging a second source can never introduce a duplicate. This is the
+  // whole mechanism described in "Growing the word lists" below — it is not
+  // special-cased per source, so a third source merges in exactly the same
+  // way.
+  const allWords = new Set([...enable, ...unixWords]);
 
   process.stdout.write(
-    `\nSources: enable=${enable.size} popular=${popular.size} frequency=${ranks.size}\n\n`,
+    `\nSources: enable=${enable.size} unixWords=${unixWords.size} merged=${allWords.size} ` +
+      `popular=${popular.size} frequency=${ranks.size}\n\n`,
   );
 
   await mkdir(OUT_DIR, { recursive: true });
   const summary = [];
 
   for (const length of WORD_LENGTHS) {
-    // Guess list: every ENABLE1 word of this length (FR-25).
-    const guesses = [...enable].filter((w) => w.length === length).sort();
+    // Guess list: every word of this length from the merged sources (FR-25).
+    const guesses = [...allWords].filter((w) => w.length === length).sort();
 
     // Answer candidates: familiar words, ranked by corpus frequency.
     // `popular` keeps out technical/archaic entries that are frequent in web
     // text but unknown to most players; the rank sort then puts the most
-    // everyday words first.
+    // everyday words first. Words that exist only in the supplementary
+    // `unixWords` source are never in `popular`, so they fall out of the
+    // answer pool automatically — no extra filter needed.
     const candidates = guesses
       .filter((word) => popular.has(word) && ranks.has(word))
-      .filter((word) => isFairAnswer(word, enable))
+      .filter((word) => isFairAnswer(word, allWords))
       .sort((a, b) => ranks.get(a) - ranks.get(b));
 
     const answers = candidates.slice(0, ANSWER_TARGET).sort();
@@ -270,12 +291,28 @@ function renderModule({ length, answers, guesses, checksum }) {
 // Word length: ${length} · answers: ${answers.length} · guesses: ${guesses.length} · sha256: ${checksum}
 //
 // Sources (see src/dictionary/data/README.md for provenance and licensing):
-//   ENABLE1 public-domain word list, and Google Web Trillion Word Corpus
-//   frequencies via Peter Norvig's count_1w.
+//   ENABLE1 and the Unix /usr/share/dict/words list (both public domain, via
+//   dolph/dictionary) for guesses, and the Google Web Trillion Word Corpus
+//   frequencies via Peter Norvig's count_1w to rank and pick answers.
 //
 // \`answers\` is a curated, common, fair subset. \`guesses\` is the permissive
 // superset accepted as input (ADR-004). Both are uppercase, unique and sorted;
 // the invariants are enforced by src/dictionary/__tests__/data.test.ts.
+//
+// Growing the word lists without duplicates: this file is regenerated, never
+// hand-edited, so "add more words" means adding another source to the
+// generator, not editing this array. In scripts/build-dictionaries.mjs:
+//   1. Add the source's URL to \`SOURCES\`.
+//   2. Fetch and parse it into an uppercase Set, same as \`enable\`/\`unixWords\`.
+//   3. Merge it into \`allWords\` with \`new Set([...enable, ...newSource])\` —
+//      a Set union, so re-adding an existing word is a no-op and duplicates
+//      are structurally impossible, not just filtered after the fact.
+//   4. Re-run \`node scripts/build-dictionaries.mjs && npm run format\`.
+// A word only needs to clear the answer-candidate filters (popular + ranked
+// + isFairAnswer) to join \`answers\`; anything else in the merged set becomes
+// a \`guesses\`-only entry. src/dictionary/__tests__/data.test.ts re-verifies
+// uniqueness/sort/superset invariants against the regenerated output either
+// way, so a bad source or a bad merge fails the test suite, not silently.
 
 /** Words that may be chosen as the solution (FR-25, FR-30, FR-31). */
 export const answers: readonly string[] = [
