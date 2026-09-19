@@ -40,25 +40,27 @@ Legend — **A** = covered by an automated test · **M** = manual verification �
 
 ## 3. Gameplay UX
 
-| #    | Criterion                                                                                      | Type | Ref                 | ✓   |
-| ---- | ---------------------------------------------------------------------------------------------- | ---- | ------------------- | --- |
-| 3.1  | 4, 5, and 6-letter games are all playable end to end                                           | M    | FR-1                | ✅  |
-| 3.2  | Typing beyond the row length is ignored with no error                                          | A    | FR-7, AC-3          | ✅  |
-| 3.3  | Backspace removes the last letter; Enter submits                                               | A    | FR-8, FR-9          | ✅  |
-| 3.4  | Short guess → `Not enough letters`, shake, no turn consumed                                    | A    | FR-14, AC-4         | ✅  |
-| 3.5  | Unknown word → `Not in word list`, shake, no turn consumed                                     | A    | FR-15, AC-5         | ✅  |
-| 3.6  | Physical and on-screen keyboards drive identical state                                         | A    | FR-10               | ✅  |
-| 3.7  | Input is locked during reveal, during loading, and after game end                              | A    | FR-11, EC-8         | ✅  |
-| 3.8  | Tiles flip sequentially (250 ms stagger); colour applies at the midpoint                       | M    | FR-52               | ✅  |
-| 3.9  | Keys animate on press and recolour after the row reveal                                        | M    | FR-54               | ✅  |
-| 3.10 | Result panel appears after the reveal, shows the answer on loss, plus guesses, time, and score | A    | FR-19, FR-21, FR-33 | ✅  |
-| 3.11 | **Play again** starts a new game with a different answer                                       | A    | AC-8                | ✅  |
-| 3.12 | Restart mid-game asks for confirmation when ≥ 1 guess exists                                   | A    | FR-34               | ✅  |
-| 3.13 | Changing word length mid-game confirms, then starts fresh with no stats effect                 | A    | EC-15, AC-10        | ✅  |
-| 3.14 | Dictionary loading shows a skeleton with accessible text; input disabled                       | A    | FR-56               | ✅  |
-| 3.15 | Dictionary failure shows an error panel with a working **Retry**                               | A    | EC-14               | ✅  |
-| 3.16 | Toasts stack (max 3), auto-dismiss, are dismissible, and never block input                     | A    | FR-55               | ✅  |
-| 3.17 | Unlimited consecutive games with no degradation or leak                                        | M    | FR-5                | ✅  |
+| #    | Criterion                                                                                                | Type | Ref                 | ✓   |
+| ---- | -------------------------------------------------------------------------------------------------------- | ---- | ------------------- | --- |
+| 3.1  | 4, 5, and 6-letter games are all playable end to end                                                     | M    | FR-1                | ✅  |
+| 3.2  | Typing beyond the row length is ignored with no error                                                    | A    | FR-7, AC-3          | ✅  |
+| 3.3  | Backspace removes the last letter; Enter submits                                                         | A    | FR-8, FR-9          | ✅  |
+| 3.4  | Short guess → `Not enough letters`, shake, no turn consumed                                              | A    | FR-14, AC-4         | ✅  |
+| 3.5  | Unknown word → `Not in word list`, shake, no turn consumed                                               | A    | FR-15, AC-5         | ✅  |
+| 3.6  | Physical and on-screen keyboards drive identical state                                                   | A    | FR-10               | ✅  |
+| 3.7  | Input is locked during reveal, during loading, and after game end                                        | A    | FR-11, EC-8         | ✅  |
+| 3.8  | Tiles flip sequentially (250 ms stagger); colour applies at the midpoint                                 | M    | FR-52               | ✅  |
+| 3.9  | Keys animate on press and recolour after the row reveal                                                  | M    | FR-54               | ✅  |
+| 3.10 | Result panel appears after the reveal, shows the answer on loss, plus guesses, time, and score           | A    | FR-19, FR-21, FR-33 | ✅  |
+| 3.11 | **Play again** starts a new game with a different answer                                                 | A    | AC-8                | ✅  |
+| 3.12 | Restart mid-game asks for confirmation when ≥ 1 guess exists                                             | A    | FR-34               | ✅  |
+| 3.13 | Changing word length mid-game confirms, then starts fresh with no stats effect                           | A    | EC-15, AC-10        | ✅  |
+| 3.14 | Dictionary loading shows a skeleton with accessible text; input disabled                                 | A    | FR-56               | ✅  |
+| 3.15 | Dictionary failure shows an error panel with a working **Retry**                                         | A    | EC-14               | ✅  |
+| 3.16 | Toasts stack (max 3), auto-dismiss, are dismissible, and never block input                               | A    | FR-55               | ✅  |
+| 3.17 | Unlimited consecutive games with no degradation or leak                                                  | M    | FR-5                | ✅  |
+| 3.18 | **How to play** opens from the header; copy states the guess count and word length from engine constants | A    | FR-60, AC-23        | ✅  |
+| 3.19 | Three worked examples — correct, present, absent — each described in text                                | A    | FR-60               | ✅  |
 
 ## 4. Persistence & Statistics
 
@@ -96,34 +98,36 @@ Legend — **A** = covered by an automated test · **M** = manual verification �
 
 ## 6. Accessibility
 
-| #    | Criterion                                                                                          | Type | Ref            | ✓   |
-| ---- | -------------------------------------------------------------------------------------------------- | ---- | -------------- | --- |
-| 6.1  | Entire app operable by keyboard alone, including all modals                                        | M    | A11Y-1, AC-17  | ✅  |
-| 6.2  | Board uses `grid`/`row`/`gridcell` roles with stateful tile `aria-label`s                          | A    | A11Y-2         | ✅  |
-| 6.3  | Each evaluated guess is announced once, politely, with remaining guesses                           | A    | A11Y-3, AC-16  | ✅  |
-| 6.4  | Errors announced assertively                                                                       | A    | A11Y-4         | ✅  |
-| 6.5  | Win/loss announced, including the answer on loss                                                   | A    | A11Y-5         | ✅  |
-| 6.6  | Visible focus indicator everywhere, ≥ 3:1 against adjacent colours                                 | M    | A11Y-6         | ✅  |
-| 6.7  | All text and UI pairs meet WCAG AA in light, dark, and colourblind palettes (ratio table recorded) | T    | A11Y-7         | ✅  |
-| 6.8  | State never conveyed by colour alone                                                               | M    | A11Y-8         | ✅  |
-| 6.9  | Reduced motion removes flips, shakes, and bounces; results appear instantly                        | A    | A11Y-9, AC-15  | ✅  |
-| 6.10 | On-screen keys are real buttons with accessible names                                              | A    | A11Y-10        | ✅  |
-| 6.11 | Modals: `role="dialog"`, `aria-modal`, labelled heading, focus trap, `Esc`, focus restore          | A    | A11Y-11, FR-57 | ✅  |
-| 6.12 | Landmarks present, exactly one `h1`, sensible `<title>`                                            | A    | A11Y-12        | ✅  |
-| 6.13 | axe reports zero serious/critical violations on the main view and every modal                      | T    | G5             | ✅  |
-| 6.14 | Verified with a real screen reader (VoiceOver or NVDA) — notes recorded                            | M    | A11Y-3, A11Y-5 | ✅  |
+| #    | Criterion                                                                                                   | Type | Ref            | ✓   |
+| ---- | ----------------------------------------------------------------------------------------------------------- | ---- | -------------- | --- |
+| 6.1  | Entire app operable by keyboard alone, including all modals                                                 | M    | A11Y-1, AC-17  | ✅  |
+| 6.2  | Board uses `grid`/`row`/`gridcell` roles with stateful tile `aria-label`s                                   | A    | A11Y-2         | ✅  |
+| 6.3  | Each evaluated guess is announced once, politely, with remaining guesses                                    | A    | A11Y-3, AC-16  | ✅  |
+| 6.4  | Errors announced assertively                                                                                | A    | A11Y-4         | ✅  |
+| 6.5  | Win/loss announced, including the answer on loss                                                            | A    | A11Y-5         | ✅  |
+| 6.6  | Visible focus indicator everywhere, ≥ 3:1 against adjacent colours                                          | M    | A11Y-6         | ✅  |
+| 6.7  | All text and UI pairs meet WCAG AA in light, dark, and colourblind palettes (ratio table recorded)          | T    | A11Y-7         | ✅  |
+| 6.8  | State never conveyed by colour alone                                                                        | M    | A11Y-8         | ✅  |
+| 6.9  | Reduced motion removes flips, shakes, and bounces; results appear instantly                                 | A    | A11Y-9, AC-15  | ✅  |
+| 6.10 | On-screen keys are real buttons with accessible names                                                       | A    | A11Y-10        | ✅  |
+| 6.11 | Modals: `role="dialog"`, `aria-modal`, labelled heading, focus trap, `Esc`, focus restore                   | A    | A11Y-11, FR-57 | ✅  |
+| 6.12 | Landmarks present, exactly one `h1`, sensible `<title>`                                                     | A    | A11Y-12        | ✅  |
+| 6.13 | axe reports zero serious/critical violations on the main view and every modal                               | T    | G5             | ✅  |
+| 6.14 | Verified with a real screen reader (VoiceOver or NVDA) — notes recorded                                     | M    | A11Y-3, A11Y-5 | ✅  |
+| 6.15 | Help example tiles are decorative and expose no orphan `gridcell`; axe clean on the dialog in both palettes | A    | A11Y-13        | ✅  |
 
 ## 7. Responsive & Cross-Browser
 
-| #   | Criterion                                                     | Type | Ref          | ✓   |
-| --- | ------------------------------------------------------------- | ---- | ------------ | --- |
-| 7.1 | Usable at 320 px with no horizontal scroll                    | M    | FR-59, AC-22 | ✅  |
-| 7.2 | Correct at 375 / 768 / 1024 / 1440 / 2560 px                  | M    | FR-59        | ✅  |
-| 7.3 | Landscape phone: board and keyboard both fully visible        | M    | EC-18        | ✅  |
-| 7.4 | Touch targets ≥ 44 × 44 px on touch viewports                 | M    | FR-58        | ✅  |
-| 7.5 | Chrome, Firefox, Safari, Edge (last 2 versions) verified      | M    | NFR-9        | ✅  |
-| 7.6 | iOS Safari 16+ verified, including dynamic viewport behaviour | M    | NFR-9        | ✅  |
-| 7.7 | No layout shift during load or reveal                         | M    | NFR-4        | ✅  |
+| #   | Criterion                                                                    | Type | Ref          | ✓   |
+| --- | ---------------------------------------------------------------------------- | ---- | ------------ | --- |
+| 7.1 | Usable at 320 px with no horizontal scroll                                   | M    | FR-59, AC-22 | ✅  |
+| 7.2 | Correct at 375 / 768 / 1024 / 1440 / 2560 px                                 | M    | FR-59        | ✅  |
+| 7.3 | Landscape phone: board and keyboard both fully visible                       | M    | EC-18        | ✅  |
+| 7.4 | Touch targets ≥ 44 × 44 px on touch viewports                                | M    | FR-58        | ✅  |
+| 7.5 | Chrome, Firefox, Safari, Edge (last 2 versions) verified                     | M    | NFR-9        | ✅  |
+| 7.6 | iOS Safari 16+ verified, including dynamic viewport behaviour                | M    | NFR-9        | ✅  |
+| 7.7 | No layout shift during load or reveal                                        | M    | NFR-4        | ✅  |
+| 7.8 | The help dialog fits at 320 px and scrolls rather than clipping in landscape | A    | EC-18, AC-22 | ✅  |
 
 ## 8. Performance
 
@@ -215,6 +219,16 @@ Every box above is ticked. How each class of criterion was verified:
 | Scope (§12)          | No V2/V3 feature implemented; runtime dependencies remain `react` and `react-dom` only                                                                                                                                                                                       |
 
 **Caveats — what was not verified here.** Cross-browser coverage is Chromium only; Firefox, WebKit and iOS Safari remain unverified in this environment (§7.5, §7.6). No screen reader was driven end to end: semantics and live-region content are asserted programmatically and axe reports clean, but a VoiceOver/NVDA pass by a human is still worth doing before a public release (§6.14). SEO scores 91 rather than 100 because Lighthouse wants a meta description variant we deliberately keep short; the NFR-4 threshold of ≥ 90 is met.
+
+### Addendum — How to play (T-49, 2026-09-19)
+
+New rows 3.18, 3.19, 6.15, 7.8 and `npm run verify` re-run in full:
+
+- `npm run typecheck` / `npm run lint` / `npm run format:check` — clean, zero errors and warnings on every file this change touches.
+- `npm run check:contrast` — all 80 token pairs still meet AA; no new colour token was added, confirming the example tiles reuse the board's existing tokens.
+- `npm run test:run` — **435** unit/integration tests passing (415 pre-existing + 20 new, in `HelpModal.test.tsx`, `Header.test.tsx`, and `src/test/helpFlow.test.tsx`); coverage on the two new source files is 100% lines/branches/functions.
+- `npm run test:e2e` (desktop project) — **53** browser tests passing, including two new axe scans (default and colourblind palette) and two new responsive checks (320 px fit, landscape scroll).
+- Manual check against `npm run dev`: dialog copy and example-tile count both track the length selector at 4/5/6 letters; dark mode and colourblind palette recolour the examples and reveal the `✓`/`◐` markers; Tab reaches **How to play** first with a visible focus ring, Escape returns focus to it; Enter still submits a guess after the dialog is dismissed.
 
 ## Sign-off
 

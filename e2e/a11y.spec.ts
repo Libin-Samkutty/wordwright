@@ -48,6 +48,33 @@ test.describe('axe (A11Y, NFR-4)', () => {
     expect(results.violations).toEqual([]);
   });
 
+  test('help dialog has no violations (FR-60, A11Y-13)', async ({ page }) => {
+    await ready(page);
+    await page.getByRole('button', { name: 'How to play' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    const results = await scan(page);
+
+    expect(results.violations).toEqual([]);
+  });
+
+  test('help dialog has no violations in the colourblind palette (A11Y-8, A11Y-13)', async ({
+    page,
+  }) => {
+    await ready(page);
+    await page.getByRole('button', { name: 'Settings' }).click();
+    await page.getByRole('switch', { name: 'Colourblind mode' }).click();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toBeHidden();
+
+    await page.getByRole('button', { name: 'How to play' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    const results = await scan(page);
+
+    expect(results.violations).toEqual([]);
+  });
+
   test('dark mode has no violations', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'dark' });
     await ready(page);

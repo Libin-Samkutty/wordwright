@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { GameView } from './components/game/GameView';
+import { HelpModal } from './components/help/HelpModal';
 import { ErrorBoundary } from './components/layout/ErrorBoundary';
 import { Header } from './components/layout/Header';
 import { SettingsModal } from './components/settings/SettingsModal';
@@ -27,6 +28,7 @@ function AppShell(): React.JSX.Element {
   const { wordLength, setWordLength, dictionaryStatus } = useGame();
   const { toasts, dismiss } = useToast();
 
+  const [isHelpOpen, setHelpOpen] = useState(false);
   const [isStatsOpen, setStatsOpen] = useState(false);
   const [isSettingsOpen, setSettingsOpen] = useState(false);
 
@@ -41,6 +43,9 @@ function AppShell(): React.JSX.Element {
         wordLength={wordLength}
         lengthDisabled={dictionaryStatus === 'loading'}
         onLengthChange={handleLengthChange}
+        onOpenHelp={() => {
+          setHelpOpen(true);
+        }}
         onOpenStats={() => {
           setStatsOpen(true);
         }}
@@ -60,6 +65,13 @@ function AppShell(): React.JSX.Element {
       <StorageNotices />
       <ToastRegion toasts={toasts} onDismiss={dismiss} />
 
+      <HelpModal
+        isOpen={isHelpOpen}
+        wordLength={wordLength}
+        onClose={() => {
+          setHelpOpen(false);
+        }}
+      />
       <StatsModal
         isOpen={isStatsOpen}
         onClose={() => {

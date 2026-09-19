@@ -6,6 +6,7 @@ export interface HeaderProps {
   readonly wordLength: WordLength;
   readonly lengthDisabled: boolean;
   readonly onLengthChange: (length: WordLength) => void;
+  readonly onOpenHelp: () => void;
   readonly onOpenStats: () => void;
   readonly onOpenSettings: () => void;
 }
@@ -35,6 +36,7 @@ export function Header({
   wordLength,
   lengthDisabled,
   onLengthChange,
+  onOpenHelp,
   onOpenStats,
   onOpenSettings,
 }: HeaderProps): React.JSX.Element {
@@ -47,6 +49,24 @@ export function Header({
         </h1>
 
         <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
+          <IconButton label="How to play" onClick={onOpenHelp}>
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              className="size-5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <circle cx="12" cy="12" r="9" />
+              <path
+                d="M9.6 9.3a2.5 2.5 0 0 1 4.86.83c0 1.67-2.5 2.5-2.5 2.5"
+                strokeLinecap="round"
+              />
+              <path d="M12 16.5h.01" strokeLinecap="round" />
+            </svg>
+          </IconButton>
+
           <LengthSelector value={wordLength} disabled={lengthDisabled} onChange={onLengthChange} />
 
           <IconButton label="Statistics" onClick={onOpenStats}>

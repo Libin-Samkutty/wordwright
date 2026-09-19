@@ -43,6 +43,10 @@ Wordwright is a single-page web app that recreates the Wordle game loop with thr
 | ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | ![Colourblind mode using blue and orange tiles with check and half-circle markers](./docs/screenshots/colourblind.png) | ![Statistics panel showing streaks, averages and the guess distribution](./docs/screenshots/statistics.png) |
 
+| How to play                                                                                       |
+| ------------------------------------------------------------------------------------------------- |
+| ![How to play dialog explaining the rules with worked tile examples](./docs/screenshots/help.png) |
+
 Colourblind mode swaps green/yellow for blue/orange **and** adds distinct tile markers, so colour is never the only signal. Screenshots are generated from the production build by `npm run screenshots`.
 
 ## Features
@@ -57,6 +61,7 @@ Colourblind mode swaps green/yellow for blue/orange **and** adds distinct tile m
 
 ### Experience
 
+- Built-in **How to play** guide with worked tile examples for every word length
 - Responsive layout from 320 px phones to widescreen desktops
 - Physical keyboard **and** on-screen keyboard, kept in sync
 - Tile flip reveal, key press/state animations, shake on invalid input, win bounce

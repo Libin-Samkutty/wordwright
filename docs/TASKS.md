@@ -9,7 +9,7 @@ Ordered, phased backlog for V1. Every task is **independently completable**: it 
 - **DoD** — done when these are true, _in addition to_ the global bar: `npm run verify` passes, no console errors, docs updated if behaviour changed.
 - Phases are sequential; tasks inside a phase are mostly parallelisable unless a dependency is noted.
 
-**Progress:** 48 / 48 complete — all phases done, plus a full review pass (2026-07-26). See [`REVIEW.md`](./REVIEW.md).
+**Progress:** 49 / 49 complete — all phases done, plus a full review pass (2026-07-26). See [`REVIEW.md`](./REVIEW.md).
 
 ---
 
@@ -384,10 +384,26 @@ A fifth issue, the production build being OOM-killed, was traced to Tailwind's s
 
 ---
 
+## Phase 10 — Post-V1 Enhancements (T-49 …)
+
+### ✅ T-49 · How to play dialog
+
+Header control plus a portalled dialog explaining the rules, with three worked
+tile examples that follow the active word length and the colourblind palette.
+Opened by the player only; nothing is persisted (ADR-020).
+
+**Req:** US-19, FR-60, A11Y-13, AC-23 · **Depends:** T-34 (`Header`), T-35 (`Modal`) ·
+**DoD:** `npm run verify` green; new component and integration tests pass; axe
+clean on the dialog in both palettes; `npm run test:e2e` green; no new colour
+token, so `check:contrast` is unchanged; SPEC / ARCHITECTURE / DECISIONS /
+ACCEPTANCE updated in the same PR.
+
+---
+
 ## Dependency Summary
 
 ```
-Phase 0 ──▶ Phase 1 ──▶ Phase 2 ──▶ Phase 4 ──▶ Phase 5 ──▶ Phase 6 ──▶ Phase 7 ──▶ Phase 8 ──▶ Phase 9
+Phase 0 ──▶ Phase 1 ──▶ Phase 2 ──▶ Phase 4 ──▶ Phase 5 ──▶ Phase 6 ──▶ Phase 7 ──▶ Phase 8 ──▶ Phase 9 ──▶ Phase 10
               │            ▲           ▲
               └── Phase 3 ─┴───────────┘
 ```

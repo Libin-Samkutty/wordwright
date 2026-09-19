@@ -58,6 +58,16 @@ test.describe('screenshots', () => {
     await page.screenshot({ path: 'docs/screenshots/colourblind.png' });
   });
 
+  test('help', async ({ page }) => {
+    await page.setViewportSize({ width: 900, height: 900 });
+    await ready(page);
+
+    await page.getByRole('button', { name: 'How to play' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    await page.screenshot({ path: 'docs/screenshots/help.png' });
+  });
+
   test('statistics', async ({ page }) => {
     await page.setViewportSize({ width: 900, height: 900 });
     await ready(page);

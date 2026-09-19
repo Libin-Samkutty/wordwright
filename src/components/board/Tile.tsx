@@ -3,6 +3,8 @@ import { memo } from 'react';
 import type { TileState } from '@/engine';
 import { cn } from '@/lib/cn';
 
+import { TILE_STATE_CLASS, TILE_STATE_MARKER } from './tileAppearance';
+
 export interface TileProps {
   readonly letter: string;
   readonly state: TileState;
@@ -16,31 +18,12 @@ export interface TileProps {
   readonly reducedMotion: boolean;
 }
 
-const STATE_CLASS: Record<TileState, string> = {
-  empty: 'border-tile-empty-border bg-transparent text-tile-text',
-  filled: 'border-tile-filled-border bg-transparent text-tile-text',
-  correct: 'border-tile-correct bg-tile-correct text-tile-text-revealed',
-  present: 'border-tile-present bg-tile-present text-tile-text-revealed',
-  absent: 'border-tile-absent bg-tile-absent text-tile-text-revealed',
-};
-
 const STATE_LABEL: Record<TileState, string> = {
   empty: 'empty',
   filled: 'entered',
   correct: 'correct position',
   present: 'wrong position',
   absent: 'not in word',
-};
-
-/**
- * Non-colour markers for colourblind mode (A11Y-8).
- *
- * Colour alone never conveys state. These sit in a corner of the tile and are
- * hidden from assistive tech, which reads the aria-label instead.
- */
-const STATE_MARKER: Partial<Record<TileState, string>> = {
-  correct: '✓',
-  present: '◐',
 };
 
 /**
@@ -59,7 +42,7 @@ export const Tile = memo(function Tile({
   reducedMotion,
 }: TileProps): React.JSX.Element {
   const isRevealed = state === 'correct' || state === 'present' || state === 'absent';
-  const marker = STATE_MARKER[state];
+  const marker = TILE_STATE_MARKER[state];
 
   return (
     <div
@@ -69,7 +52,7 @@ export const Tile = memo(function Tile({
         'relative flex items-center justify-center border-2 font-bold uppercase select-none',
         'size-(--size-tile) text-[calc(var(--size-tile)*0.5)]',
         'transition-colors duration-150',
-        STATE_CLASS[state],
+        TILE_STATE_CLASS[state],
         state === 'filled' && !reducedMotion && 'animate-pop',
         isRevealing && !reducedMotion && 'animate-flip',
       )}

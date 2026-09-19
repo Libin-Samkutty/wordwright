@@ -79,8 +79,9 @@ wordwright/
 │   │   └── contexts.ts            # context objects + typed useX() hooks
 │   ├── components/
 │   │   ├── layout/    AppShell.tsx  Header.tsx  ErrorBoundary.tsx
-│   │   ├── board/     Board.tsx  Row.tsx  Tile.tsx  BoardSkeleton.tsx
+│   │   ├── board/     Board.tsx  Row.tsx  Tile.tsx  tileAppearance.ts  BoardSkeleton.tsx
 │   │   ├── keyboard/  Keyboard.tsx  KeyboardRow.tsx  Key.tsx
+│   │   ├── help/      HelpModal.tsx
 │   │   ├── stats/     StatsModal.tsx  StatTile.tsx  GuessDistribution.tsx  RecentGames.tsx
 │   │   ├── settings/  SettingsModal.tsx  ThemeSelector.tsx  ToggleRow.tsx  DangerZone.tsx
 │   │   ├── game/      ResultPanel.tsx  LengthSelector.tsx  DictionaryError.tsx
@@ -221,6 +222,7 @@ The engine never calls `Math.random()` directly. Tests inject a fixed sequence; 
         <GameProvider>          useReducer(gameReducer) + dictionary + persistence
           <AppShell>
             <Header>
+              <IconButton "How to play" />
               <LengthSelector />       ← radio group, 4 / 5 / 6
               <IconButton "Statistics" />
               <IconButton "Settings" />
@@ -234,6 +236,7 @@ The engine never calls `Math.random()` directly. Tests inject a fixed sequence; 
             <Keyboard>
               <KeyboardRow × 3><Key /></KeyboardRow>
             <ToastRegion />            ← portal, top-centre
+            <HelpModal />              ← portal, focus-trapped
             <StatsModal />             ← portal, focus-trapped
             <SettingsModal />          ← portal, focus-trapped
 ```
@@ -414,21 +417,23 @@ For every list: uppercase, `/^[A-Z]+$/`, exact length, no duplicates, sorted, `a
 - **Colourblind mode:** `data-palette="cb"` on `<html>` re-points the same tokens to blue/orange. Because every component uses tokens, no component knows the palette exists — that is the extension point for V2 themes (ADR-008).
 - **Motion:** `data-motion="reduced"` on `<html>` plus a `@media (prefers-reduced-motion: reduce)` block; both zero out durations in `animations.css`. The `useRevealTimeline` hook also collapses its stagger to 0 so logic and CSS agree (A11Y-9).
 - Layout uses flex column with `min-h-dvh`, `clamp()`-sized tiles, and container-driven sizing so 320 px and landscape phones both fit (FR-59, EC-18).
+- The help dialog's example tiles (FR-60) reuse the board's own token classes and colourblind marker glyphs, exported from `board/tileAppearance.ts`, rather than a fixed `clamp()` size — so no new colour token exists and `scripts/check-contrast.mjs` needed no change.
 
 ---
 
 ## 10. Accessibility Implementation
 
-| Concern              | Mechanism                                                                                                              |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Board semantics      | `role="grid"` / `role="row"` / `role="gridcell"`, `aria-label` per tile including state (A11Y-2)                       |
-| Result announcements | `useAnnouncer` writes to a polite live region; the message is composed after reveal so it is announced once (A11Y-3)   |
-| Errors               | Separate assertive live region inside `ToastRegion` (A11Y-4)                                                           |
-| Focus trap           | `useFocusTrap` — first focusable on open, cycle on Tab, `Esc` to close, restore to trigger (FR-57, A11Y-11)            |
-| Focus ring           | Global `:focus-visible` ring using `--color-focus`; `outline: none` is never used without a replacement (A11Y-6)       |
-| Keys                 | Real `<button>`s with `aria-label` + `aria-pressed`-free state text (A11Y-10)                                          |
-| Physical keyboard    | A single window listener that ignores events when `event.metaKey/ctrlKey/altKey` (EC-4) or when a modal is open (EC-7) |
-| Landmarks            | `header` / `main` / `footer`, one `h1` (A11Y-12)                                                                       |
+| Concern              | Mechanism                                                                                                                                     |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Board semantics      | `role="grid"` / `role="row"` / `role="gridcell"`, `aria-label` per tile including state (A11Y-2)                                              |
+| Result announcements | `useAnnouncer` writes to a polite live region; the message is composed after reveal so it is announced once (A11Y-3)                          |
+| Errors               | Separate assertive live region inside `ToastRegion` (A11Y-4)                                                                                  |
+| Focus trap           | `useFocusTrap` — first focusable on open, cycle on Tab, `Esc` to close, restore to trigger (FR-57, A11Y-11)                                   |
+| Focus ring           | Global `:focus-visible` ring using `--color-focus`; `outline: none` is never used without a replacement (A11Y-6)                              |
+| Keys                 | Real `<button>`s with `aria-label` + `aria-pressed`-free state text (A11Y-10)                                                                 |
+| Physical keyboard    | A single window listener that ignores events when `event.metaKey/ctrlKey/altKey` (EC-4) or when a modal is open (EC-7)                        |
+| Landmarks            | `header` / `main` / `footer`, one `h1` (A11Y-12)                                                                                              |
+| Help examples        | Decorative tiles are `aria-hidden`; the sentence beneath carries the meaning, so no `gridcell` appears outside the board's own grid (A11Y-13) |
 
 ---
 
@@ -457,21 +462,21 @@ For every list: uppercase, `/^[A-Z]+$/`, exact length, no duplicates, sorted, `a
 
 ## 12. Extension Points (how V2/V3 land without a rewrite)
 
-| Future feature                    | Seam that already exists                                                | Work required                                                                                                  |
-| --------------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| **Daily challenge**               | `RandomSource` injection + `pickAnswer`                                 | Inject `seededRandom(dateSeed)`; add a `mode` field to `GameState`; new provider prop. No engine rules change. |
-| **Seeded / shareable games**      | Same PRNG, URL parse in `main.tsx`                                      | Read `?seed=` → seeded source.                                                                                 |
-| **Hard mode**                     | Validation is an injected predicate                                     | Add a `hardModeRule(previousGuesses)` composed into `validateGuess`. Reducer untouched.                        |
-| **Timed / survival modes**        | `startedAt`/`finishedAt` + monotonic `clock.ts`                         | New provider wrapping the same reducer; add statuses to the `GameStatus` union.                                |
-| **New word length (e.g. 7)**      | `WORD_LENGTHS` const + registry map                                     | Add two data modules + one registry entry + widen the tuple. Nothing else (FR-29).                             |
-| **Per-length analytics / charts** | `stats.perLength` is already recorded (FR-36)                           | Pure presentation layer.                                                                                       |
-| **Calendar heatmap / trends**     | `recentGames` carries `playedAt`                                        | Increase the retention cap; add a chart component.                                                             |
-| **Achievements**                  | Game completion is a single funnel (`recordGame`)                       | Subscribe an achievements evaluator to that call.                                                              |
-| **Sound effects**                 | Reveal/keypress already emit discrete events via the timeline hook      | Add an audio adapter listening to those events.                                                                |
-| **Themes**                        | Everything is a design token                                            | Add token sets keyed by `data-theme`.                                                                          |
-| **PWA**                           | No runtime network, all assets static                                   | Add `vite-plugin-pwa` + manifest + icons. Zero app-code change.                                                |
-| **Cloud sync (V3)**               | Repository interface                                                    | Implement a remote `Repository<T>` with the same contract; swap at the provider.                               |
-| **i18n (V3)**                     | Dictionary registry is keyed data; UI strings centralised in one module | Key the registry by `locale + length`; add a string catalogue.                                                 |
+| Future feature                    | Seam that already exists                                                | Work required                                                                                                   |
+| --------------------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| **Daily challenge**               | `RandomSource` injection + `pickAnswer`                                 | Inject `seededRandom(dateSeed)`; add a `mode` field to `GameState`; new provider prop. No engine rules change.  |
+| **Seeded / shareable games**      | Same PRNG, URL parse in `main.tsx`                                      | Read `?seed=` → seeded source.                                                                                  |
+| **Hard mode**                     | Validation is an injected predicate                                     | Add a `hardModeRule(previousGuesses)` composed into `validateGuess`. Reducer untouched.                         |
+| **Timed / survival modes**        | `startedAt`/`finishedAt` + monotonic `clock.ts`                         | New provider wrapping the same reducer; add statuses to the `GameStatus` union.                                 |
+| **New word length (e.g. 7)**      | `WORD_LENGTHS` const + registry map                                     | Add two data modules + one registry entry + widen the tuple + one `HELP_EXAMPLES` entry, type-enforced (FR-29). |
+| **Per-length analytics / charts** | `stats.perLength` is already recorded (FR-36)                           | Pure presentation layer.                                                                                        |
+| **Calendar heatmap / trends**     | `recentGames` carries `playedAt`                                        | Increase the retention cap; add a chart component.                                                              |
+| **Achievements**                  | Game completion is a single funnel (`recordGame`)                       | Subscribe an achievements evaluator to that call.                                                               |
+| **Sound effects**                 | Reveal/keypress already emit discrete events via the timeline hook      | Add an audio adapter listening to those events.                                                                 |
+| **Themes**                        | Everything is a design token                                            | Add token sets keyed by `data-theme`.                                                                           |
+| **PWA**                           | No runtime network, all assets static                                   | Add `vite-plugin-pwa` + manifest + icons. Zero app-code change.                                                 |
+| **Cloud sync (V3)**               | Repository interface                                                    | Implement a remote `Repository<T>` with the same contract; swap at the provider.                                |
+| **i18n (V3)**                     | Dictionary registry is keyed data; UI strings centralised in one module | Key the registry by `locale + length`; add a string catalogue.                                                  |
 
 **Anti-goal:** none of these get abstract base classes, plugin systems, or config flags in V1. The seams above are ordinary function parameters and data maps — the cheapest possible form of flexibility (ADR-005).
 

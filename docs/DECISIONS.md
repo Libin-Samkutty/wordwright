@@ -4,22 +4,28 @@ ADR-style notes explaining _why_ the design is what it is. Each record is immuta
 
 **Format:** Context → Decision → Consequences → Alternatives considered.
 
-| #                                                                     | Title                                   | Status   |
-| --------------------------------------------------------------------- | --------------------------------------- | -------- |
-| [001](#adr-001--no-backend)                                           | No backend                              | Accepted |
-| [002](#adr-002--localstorage-for-all-persistence)                     | LocalStorage for all persistence        | Accepted |
-| [003](#adr-003--framework-independent-game-engine)                    | Framework-independent game engine       | Accepted |
-| [004](#adr-004--separate-answer-and-guess-dictionaries)               | Separate answer and guess dictionaries  | Accepted |
-| [005](#adr-005--kiss-over-abstraction)                                | KISS over abstraction                   | Accepted |
-| [006](#adr-006--react-context--usereducer-instead-of-a-state-library) | Context + useReducer, no state library  | Accepted |
-| [007](#adr-007--bundled-dictionaries-loaded-via-dynamic-import)       | Bundled dictionaries via dynamic import | Accepted |
-| [008](#adr-008--design-tokens-for-theming-and-colourblind-mode)       | Design tokens for theming               | Accepted |
-| [009](#adr-009--injected-randomness)                                  | Injected randomness                     | Accepted |
-| [010](#adr-010--six-guesses-at-every-word-length)                     | Six guesses at every word length        | Accepted |
-| [011](#adr-011--tailwind-for-styling)                                 | Tailwind for styling                    | Accepted |
-| [012](#adr-012--vitest-over-jest)                                     | Vitest over Jest                        | Accepted |
-| [013](#adr-013--no-pwa-in-v1)                                         | No PWA in V1                            | Accepted |
-| [014](#adr-014--documentation-first-workflow)                         | Documentation-first workflow            | Accepted |
+| #                                                                     | Title                                           | Status   |
+| --------------------------------------------------------------------- | ----------------------------------------------- | -------- |
+| [001](#adr-001--no-backend)                                           | No backend                                      | Accepted |
+| [002](#adr-002--localstorage-for-all-persistence)                     | LocalStorage for all persistence                | Accepted |
+| [003](#adr-003--framework-independent-game-engine)                    | Framework-independent game engine               | Accepted |
+| [004](#adr-004--separate-answer-and-guess-dictionaries)               | Separate answer and guess dictionaries          | Accepted |
+| [005](#adr-005--kiss-over-abstraction)                                | KISS over abstraction                           | Accepted |
+| [006](#adr-006--react-context--usereducer-instead-of-a-state-library) | Context + useReducer, no state library          | Accepted |
+| [007](#adr-007--bundled-dictionaries-loaded-via-dynamic-import)       | Bundled dictionaries via dynamic import         | Accepted |
+| [008](#adr-008--design-tokens-for-theming-and-colourblind-mode)       | Design tokens for theming                       | Accepted |
+| [009](#adr-009--injected-randomness)                                  | Injected randomness                             | Accepted |
+| [010](#adr-010--six-guesses-at-every-word-length)                     | Six guesses at every word length                | Accepted |
+| [011](#adr-011--tailwind-for-styling)                                 | Tailwind for styling                            | Accepted |
+| [012](#adr-012--vitest-over-jest)                                     | Vitest over Jest                                | Accepted |
+| [013](#adr-013--no-pwa-in-v1)                                         | No PWA in V1                                    | Accepted |
+| [014](#adr-014--documentation-first-workflow)                         | Documentation-first workflow                    | Accepted |
+| [015](#adr-015--toolchain-version-pins-typescript-6-eslint-9)         | Toolchain version pins                          | Accepted |
+| [016](#adr-016--dependency-overrides-for-the-glob-stack)              | Dependency overrides for the glob stack         | Accepted |
+| [017](#adr-017--generated-word-lists-from-public-domain-sources)      | Generated word lists from public-domain sources | Accepted |
+| [018](#adr-018--tailwind-source-scanning-must-be-scoped-explicitly)   | Tailwind source scanning scoped explicitly      | Accepted |
+| [019](#adr-019--browser-level-testing-with-playwright)                | Browser-level testing with Playwright           | Accepted |
+| [020](#adr-020--in-game-help-is-discoverable-not-interruptive)        | In-game help is discoverable, not interruptive  | Accepted |
 
 ---
 
@@ -371,3 +377,24 @@ We also moved Tailwind from the Vite plugin to the PostCSS integration while dia
 - Cost: a ~115 MB browser download and a slower full-check cycle. E2E stays out of `npm run verify` and runs as a separate `npm run test:e2e`, so the inner loop remains fast.
 
 **Alternatives.** (a) jsdom only — cannot answer any of the above honestly. (b) Manual checking — unrepeatable and unowned; the point of the acceptance checklist is that evidence is reproducible.
+
+---
+
+## ADR-020 — In-game help is discoverable, not interruptive
+
+**Context.** The app explains nothing to a first-time player: no instructions, no legend for the tile colours. The obvious fix is the pattern the original Wordle uses: pop a "How to play" dialog open on a first visit. That needs a persisted "seen" flag, and the only sensible home for it is the settings record (`wordwright:v1:settings`) — where `validateSettings` is all-or-nothing and `createRepository.read()` treats a `null` result as corrupt. An additive required field there would silently reset every existing player's theme, colourblind, and motion preferences on upgrade, plus raise a "saved data was reset" toast for a change that added nothing they'd notice as a loss. It would also put a focus-trapped modal in front of every one of the 88 existing browser tests and the integration suite, all of which boot from empty storage.
+
+**Decision.** Help (FR-60) is reachable only from a header control (`How to play`, first in the tab order). Nothing about it is persisted; `HelpModal` is a pure function of `isOpen` and the active `wordLength`, exactly like `StatsModal` and `SettingsModal`.
+
+**Consequences.**
+
+- No schema change, no migration, no upgrade risk, no seeding required in any existing test.
+- The example tiles reuse the board's own colour tokens and marker glyphs (`board/tileAppearance.ts`) rather than `Tile` itself, since `Tile` renders `role="gridcell"` and an orphan gridcell outside a grid/row ancestry is a critical axe violation.
+- The cost is discoverability: a player who never looks at the header never sees the dialog. Accepted for V1 — auto-open on first visit can be added later as its own change, and would then owe the tolerant-validation work this decision avoids (see Alternative a).
+- FR-29's promise that a new word length costs "no other file changes" now has one more touchpoint: a `HELP_EXAMPLES` entry. The `Record<WordLength, …>` type this is stored as turns a missing entry into a compile error rather than a silently blank dialog, which is the honest version of that promise.
+
+**Alternatives.**
+
+- (a) Auto-open once, gated by a `helpSeen` flag on `Settings`. Needs `validateSettings` to treat the field as optional with an asymmetric default (absent record → unseen; present record missing the field → treated as seen, since that means a returning player) to avoid the upgrade-reset problem above, plus seeding every e2e spec and two existing unit suites so they don't boot behind a modal. Real option, deferred rather than rejected.
+- (b) A separate storage key for the flag. Avoids touching the settings schema, but adds a key, a repository, and provider plumbing for a single boolean — against ADR-005's preference for the cheapest working shape.
+- (c) An inline panel under the board instead of a modal. Competes for the same space as `ResultPanel` and risks pushing the keyboard below the fold on short viewports (EC-18), which a portalled, scrollable dialog does not.

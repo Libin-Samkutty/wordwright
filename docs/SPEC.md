@@ -43,26 +43,27 @@ Rationale in [`DECISIONS.md`](./DECISIONS.md).
 **P2 — Daily habit player.** Cares about streaks and stats.
 **P3 — Keyboard/AT user.** Plays without a mouse, may use a screen reader.
 
-| ID    | Story                                                                                 | Priority |
-| ----- | ------------------------------------------------------------------------------------- | -------- |
-| US-1  | As a player, I can start a game and guess words so I can play Wordle.                 | Must     |
-| US-2  | As a player, I can choose 4, 5, or 6 letters so I can vary difficulty.                | Must     |
-| US-3  | As a player, I see colour feedback per letter so I can deduce the answer.             | Must     |
-| US-4  | As a player, I am told when my guess isn't a real word so I don't waste a turn.       | Must     |
-| US-5  | As a player, I can play again immediately after a win or loss.                        | Must     |
-| US-6  | As a player, I can restart mid-game if I want a fresh word.                           | Must     |
-| US-7  | As a player, I can see the answer after losing so the game feels resolved.            | Must     |
-| US-8  | As a returning player, my in-progress game survives an accidental refresh.            | Must     |
-| US-9  | As a habit player, I can view detailed statistics including streaks and distribution. | Must     |
-| US-10 | As a habit player, I can see a log of my recent games.                                | Should   |
-| US-11 | As a player, I can choose light, dark, or system theme.                               | Must     |
-| US-12 | As a player, I can reset my statistics and history.                                   | Must     |
-| US-13 | As a colourblind player, I can enable a high-distinction palette.                     | Must     |
-| US-14 | As a keyboard user, I can reach and operate every control without a mouse.            | Must     |
-| US-15 | As a screen-reader user, I hear my guess results announced.                           | Must     |
-| US-16 | As a motion-sensitive player, animations are reduced or removed.                      | Must     |
-| US-17 | As a player on a plane, everything works with no connection.                          | Must     |
-| US-18 | As a player, I see a clear message if something goes wrong instead of a blank screen. | Must     |
+| ID    | Story                                                                                                  | Priority |
+| ----- | ------------------------------------------------------------------------------------------------------ | -------- |
+| US-1  | As a player, I can start a game and guess words so I can play Wordle.                                  | Must     |
+| US-2  | As a player, I can choose 4, 5, or 6 letters so I can vary difficulty.                                 | Must     |
+| US-3  | As a player, I see colour feedback per letter so I can deduce the answer.                              | Must     |
+| US-4  | As a player, I am told when my guess isn't a real word so I don't waste a turn.                        | Must     |
+| US-5  | As a player, I can play again immediately after a win or loss.                                         | Must     |
+| US-6  | As a player, I can restart mid-game if I want a fresh word.                                            | Must     |
+| US-7  | As a player, I can see the answer after losing so the game feels resolved.                             | Must     |
+| US-8  | As a returning player, my in-progress game survives an accidental refresh.                             | Must     |
+| US-9  | As a habit player, I can view detailed statistics including streaks and distribution.                  | Must     |
+| US-10 | As a habit player, I can see a log of my recent games.                                                 | Should   |
+| US-11 | As a player, I can choose light, dark, or system theme.                                                | Must     |
+| US-12 | As a player, I can reset my statistics and history.                                                    | Must     |
+| US-13 | As a colourblind player, I can enable a high-distinction palette.                                      | Must     |
+| US-14 | As a keyboard user, I can reach and operate every control without a mouse.                             | Must     |
+| US-15 | As a screen-reader user, I hear my guess results announced.                                            | Must     |
+| US-16 | As a motion-sensitive player, animations are reduced or removed.                                       | Must     |
+| US-17 | As a player on a plane, everything works with no connection.                                           | Must     |
+| US-18 | As a player, I see a clear message if something goes wrong instead of a blank screen.                  | Must     |
+| US-19 | As a new player, I can learn the rules inside the game so I can start playing without looking them up. | Must     |
 
 ## 5. Glossary
 
@@ -180,7 +181,7 @@ else:
 - **FR-26** The guess list is a superset of the answer list; a build-time/test assertion enforces this.
 - **FR-27** All entries are uppercase A–Z, exactly `n` characters, unique, and sorted. A test asserts these invariants for every list.
 - **FR-28** Lists are loaded per length through dynamic `import()` so each length is a separate chunk; loaded chunks are cached in memory for the session.
-- **FR-29** Adding a new length requires: add two data modules, add one entry to the dictionary registry, extend the `WordLength` union. No other file changes.
+- **FR-29** Adding a new length requires: add two data modules, add one entry to the dictionary registry, extend the `WordLength` union, plus one `HELP_EXAMPLES` entry (FR-60) — the `Record<WordLength, …>` type makes that last one a compile error until it is added, rather than a silently blank dialog.
 - **FR-30** Minimum sizes: answers ≥ 300, guesses ≥ 1500 per length (real English words only).
 - **FR-31** No profanity or slurs in the answer list.
 
@@ -212,7 +213,7 @@ else:
 
 ### 7.5 UI behaviour
 
-- **FR-49** Layout: header (title, length selector, stats button, settings button) → board → keyboard. Vertically centred, board scales to available space.
+- **FR-49** Layout: header (title, help button, length selector, stats button, settings button) → board → keyboard. Vertically centred, board scales to available space.
 - **FR-50** The board renders 6 rows × `wordLength` tiles at all times, including empty rows.
 - **FR-51** Tile states: `empty`, `filled` (letter typed, pre-submission — border emphasis, pop animation), `correct`, `present`, `absent`.
 - **FR-52** Flip reveal: each tile flips sequentially with a 250 ms stagger, 500 ms per flip; colour applies at the midpoint. Input is locked until the row finishes.
@@ -223,6 +224,7 @@ else:
 - **FR-57** Modals (stats, settings, confirmations) trap focus, close on `Esc` and backdrop click, and restore focus to the invoking control.
 - **FR-58** All interactive targets are ≥ 44 × 44 CSS px on touch viewports.
 - **FR-59** The app renders correctly from 320 px to 2560 px wide, and in landscape on short viewports (≤ 480 px tall) without the keyboard being cut off.
+- **FR-60** A **How to play** dialog, opened from a header control, states the guess count and the active word length from the engine constants and shows three worked tile examples (correct, present, absent), each with a plain-language sentence. Example words follow the selected length. The dialog is never opened by the app itself (ADR-020).
 
 ---
 
@@ -247,20 +249,21 @@ else:
 
 ## 9. Accessibility Requirements
 
-| ID      | Requirement                                                                                                                                                      |
-| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A11Y-1  | Every action is reachable and operable by keyboard alone; logical tab order; no keyboard traps outside intentional modal traps.                                  |
-| A11Y-2  | Board is `role="grid"` with `role="row"`/`role="gridcell"` children; each tile exposes `aria-label` like `"Row 2, letter 3: A, correct position"`.               |
-| A11Y-3  | A polite `aria-live` region announces each evaluated guess in words (e.g. `"CRANE: C correct, R absent, A present, N absent, E correct. 4 guesses remaining."`). |
-| A11Y-4  | Errors are announced via an assertive live region as well as visually.                                                                                           |
-| A11Y-5  | Game end is announced (`"You won in 4 guesses"` / `"Game over, the word was CRANE"`).                                                                            |
-| A11Y-6  | Visible focus indicator on all focusable elements, ≥ 3:1 contrast against adjacent colours, never removed.                                                       |
-| A11Y-7  | Text and UI contrast meets WCAG 2.1 AA (4.5:1 text, 3:1 large text/UI). Tile text on all five states verified.                                                   |
-| A11Y-8  | Colour is never the only signal: colourblind mode plus optional tile markers; state is always in the `aria-label`.                                               |
-| A11Y-9  | `prefers-reduced-motion: reduce` (or the reduced setting) removes flips, shakes, bounces, and confetti-like motion; transitions become instant colour swaps.     |
-| A11Y-10 | On-screen keyboard keys are real `<button>`s with `aria-label`s (`"Backspace"`, `"Enter"`, letter + state).                                                      |
-| A11Y-11 | Modals use `role="dialog" aria-modal="true"` with a labelled heading.                                                                                            |
-| A11Y-12 | The page has a sensible `<title>`, one `<h1>`, and landmark regions (`header`, `main`, `footer`).                                                                |
+| ID      | Requirement                                                                                                                                                                                         |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A11Y-1  | Every action is reachable and operable by keyboard alone; logical tab order; no keyboard traps outside intentional modal traps.                                                                     |
+| A11Y-2  | Board is `role="grid"` with `role="row"`/`role="gridcell"` children; each tile exposes `aria-label` like `"Row 2, letter 3: A, correct position"`.                                                  |
+| A11Y-3  | A polite `aria-live` region announces each evaluated guess in words (e.g. `"CRANE: C correct, R absent, A present, N absent, E correct. 4 guesses remaining."`).                                    |
+| A11Y-4  | Errors are announced via an assertive live region as well as visually.                                                                                                                              |
+| A11Y-5  | Game end is announced (`"You won in 4 guesses"` / `"Game over, the word was CRANE"`).                                                                                                               |
+| A11Y-6  | Visible focus indicator on all focusable elements, ≥ 3:1 contrast against adjacent colours, never removed.                                                                                          |
+| A11Y-7  | Text and UI contrast meets WCAG 2.1 AA (4.5:1 text, 3:1 large text/UI). Tile text on all five states verified.                                                                                      |
+| A11Y-8  | Colour is never the only signal: colourblind mode plus optional tile markers; state is always in the `aria-label`.                                                                                  |
+| A11Y-9  | `prefers-reduced-motion: reduce` (or the reduced setting) removes flips, shakes, bounces, and confetti-like motion; transitions become instant colour swaps.                                        |
+| A11Y-10 | On-screen keyboard keys are real `<button>`s with `aria-label`s (`"Backspace"`, `"Enter"`, letter + state).                                                                                         |
+| A11Y-11 | Modals use `role="dialog" aria-modal="true"` with a labelled heading.                                                                                                                               |
+| A11Y-12 | The page has a sensible `<title>`, one `<h1>`, and landmark regions (`header`, `main`, `footer`).                                                                                                   |
+| A11Y-13 | Help examples are decorative: the tiles are hidden from assistive technology and the meaning is carried by the sentence beneath, so no orphan `gridcell` semantics appear outside the board's grid. |
 
 ---
 
@@ -331,6 +334,7 @@ Principles: never a raw stack trace in the UI; never a silent failure; every err
 - **AC-20** Given `npm run verify`, then typecheck, lint, format check, and all tests pass with no warnings.
 - **AC-21** Given a Lighthouse mobile run on the production build, then the NFR-4 thresholds are met.
 - **AC-22** Given a 320 px-wide viewport, then the board and keyboard fit with no horizontal scrolling and all targets remain ≥ 44 px.
+- **AC-23** Given a 4-letter game, when I open **How to play**, then the copy says "6 tries" and "valid 4 letter word" and each example row shows 4 tiles.
 
 ---
 

@@ -55,6 +55,36 @@ test.describe('responsive layout (FR-59, AC-22)', () => {
     expect(overflow).toBeLessThanOrEqual(0);
   });
 
+  test('the help dialog fits at 320px with no horizontal scroll (AC-22)', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 568 });
+    await ready(page);
+
+    await page.getByRole('button', { name: 'How to play' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(0);
+  });
+
+  test('the help dialog scrolls rather than clipping in landscape (EC-18)', async ({ page }) => {
+    await page.setViewportSize({ width: 740, height: 360 });
+    await ready(page);
+
+    await page.getByRole('button', { name: 'How to play' }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeInViewport();
+
+    // The content genuinely overflows the 85dvh cap at this height, so this
+    // proves the panel scrolls rather than merely fitting by coincidence.
+    const { scrollHeight, clientHeight } = await dialog.evaluate((el) => ({
+      scrollHeight: el.scrollHeight,
+      clientHeight: el.clientHeight,
+    }));
+    expect(scrollHeight).toBeGreaterThan(clientHeight);
+  });
+
   test('renders all three word lengths without overflow', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 568 });
     await ready(page);
@@ -87,7 +117,7 @@ test.describe('touch targets (FR-58)', () => {
     await page.setViewportSize({ width: 375, height: 667 });
     await ready(page);
 
-    for (const name of ['Statistics', 'Settings']) {
+    for (const name of ['How to play', 'Statistics', 'Settings']) {
       const box = await page.getByRole('button', { name }).boundingBox();
       expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
       expect(box?.width ?? 0).toBeGreaterThanOrEqual(44);
